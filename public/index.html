@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coin Smith | Bitcoin Transaction Builder</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+    :root {
+      --bg-gradient-start: #1e3a5f;
+      --bg-gradient-end: #2d1b4e;
+      --card-bg: rgba(26, 29, 41, 0.8);
+      --card-border: rgba(59, 130, 246, 0.15);
+      --input-bg: #0f1117;
+      --border-color: #2a2f3f;
+      --primary: #5b8def;
+      --primary-hover: #6b9dff;
+      --text: #ffffff;
+      --text-secondary: #a0a5b8;
+      --text-muted: #6b7280;
+      --success: #10b981;
+      --orange: #f59e0b;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    html,
+    body {
+      height: 100%;
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      color: var(--text);
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background:
+        radial-gradient(circle at 20% 50%, rgba(59, 130, 246, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 80%, rgba(139, 92, 246, 0.1) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .container {
+      position: relative;
+      z-index: 1;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .header {
+      padding: 2rem 0;
+      text-align: center;
+    }
+
+    .logo-container {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 1rem;
+      margin-bottom: 0.75rem;
+    }
+
+    .bitcoin-icon {
+      width: 56px;
+      height: 56px;
+      background: linear-gradient(135deg, #d97706 0%, #b45309 100%);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.75rem;
+      font-weight: 900;
+      color: white;
+      box-shadow: 0 8px 24px rgba(180, 83, 9, 0.4);
+    }
+
+    .logo-text {
+      font-size: 3rem;
+      font-weight: 800;
+      letter-spacing: -0.02em;
+      background: linear-gradient(135deg, #d1d5db 0%, #9ca3af 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .tagline {
+      font-size: 1.1rem;
+      color: #9ca3af;
+      font-weight: 500;
+    }
+
+    .main-content {
+      max-width: 1200px;
+      width: 100%;
+      margin: 0 auto;
+      padding: 0 2rem 4rem;
+    }
+
+    .card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      padding: 3rem;
+      margin-bottom: 2rem;
+      box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .card-title {
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin-bottom: 2rem;
+      color: var(--text);
+    }
+
+    .drop-zone {
+      border: 2px dashed var(--border-color);
+      border-radius: 16px;
+      padding: 4rem 2rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      background: var(--input-bg);
+      margin-bottom: 2rem;
+    }
+
+    .drop-zone:hover,
+    .drop-zone.dragover {
+      border-color: var(--primary);
+      background: rgba(59, 130, 246, 0.05);
+      transform: translateY(-2px);
+    }
+
+    .upload-icon {
+      margin: 0 auto 1.5rem;
+      width: 80px;
+      height: 80px;
+      background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+      border-radius: 20px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+    }
+
+    .upload-icon svg {
+      width: 40px;
+      height: 40px;
+    }
+
+    .drop-text {
+      font-size: 1.1rem;
+      margin-bottom: 0.5rem;
+      color: var(--text);
+    }
+
+    .drop-text code {
+      background: rgba(59, 130, 246, 0.2);
+      padding: 0.25rem 0.6rem;
+      border-radius: 6px;
+      color: var(--primary);
+      font-family: 'Monaco', monospace;
+      font-size: 0.95rem;
+    }
+
+    .drop-subtext {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      margin-bottom: 1.5rem;
+    }
+
+    .browse-btn {
+      background: var(--primary);
+      color: white;
+      border: none;
+      padding: 0.875rem 2.5rem;
+      border-radius: 12px;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 12px rgba(59, 130, 246, 0.3);
+    }
+
+    .browse-btn:hover {
+      background: var(--primary-hover);
+      transform: translateY(-2px);
+      box-shadow: 0 6px 20px rgba(59, 130, 246, 0.4);
+    }
+
+    .divider {
+      display: flex;
+      align-items: center;
+      margin: 2.5rem 0;
+    }
+
+    .divider::before,
+    .divider::after {
+      content: '';
+      flex: 1;
+      height: 1px;
+      background: linear-gradient(90deg, transparent, var(--border-color), transparent);
+    }
+
+    .divider span {
+      padding: 0 2rem;
+      color: var(--text-muted);
+      font-size: 0.9rem;
+      font-weight: 600;
+    }
+
+    .json-editor {
+      width: 100%;
+      min-height: 200px;
+      max-height: 800px;
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      color: #7dd3fc;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      font-size: 0.95rem;
+      line-height: 1.7;
+      resize: vertical;
+      outline: none;
+      transition: all 0.2s ease;
+    }
+
+    .json-editor:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    }
+
+    .json-editor::placeholder {
+      color: #4b5563;
+    }
+
+    .button-row {
+      display: flex;
+      gap: 1rem;
+      margin-top: 1.5rem;
+    }
+
+    .btn-primary {
+      flex: 1;
+      background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+      color: white;
+      border: none;
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      box-shadow: 0 4px 16px rgba(59, 130, 246, 0.3);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 24px rgba(59, 130, 246, 0.4);
+    }
+
+    .btn-secondary {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--border-color);
+      padding: 1rem 2rem;
+      border-radius: 12px;
+      font-size: 1.05rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .btn-secondary:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+    }
+
+    .error-msg {
+      display: none;
+      background: rgba(239, 68, 68, 0.1);
+      border: 1px solid rgba(239, 68, 68, 0.3);
+      border-left: 3px solid #ef4444;
+      border-radius: 12px;
+      padding: 1.25rem 1.5rem;
+      margin-top: 1rem;
+      color: #fca5a5;
+      font-size: 0.85rem;
+      font-family: 'Monaco', 'Menlo', 'Courier New', monospace;
+      line-height: 1.8;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .error-msg.show {
+      display: block;
+      animation: slideIn 0.3s ease;
+    }
+
+    .error-msg .error-json {
+      color: #7dd3fc;
+    }
+
+    .error-msg .error-key {
+      color: #a5d6ff;
+    }
+
+    .error-msg .error-string {
+      color: #fca5a5;
+    }
+
+    .error-msg .error-boolean {
+      color: #f87171;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .results {
+      display: none;
+    }
+
+    .results.show {
+      display: block;
+      animation: fadeIn 0.4s ease;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+      }
+
+      to {
+        opacity: 1;
+      }
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 1.5rem;
+      margin-bottom: 2rem;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 1.75rem;
+      transition: all 0.2s ease;
+    }
+
+    .stat-card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 12px 32px rgba(0, 0, 0, 0.2);
+    }
+
+    .stat-label {
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.1em;
+      color: var(--text-muted);
+      margin-bottom: 0.75rem;
+    }
+
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: var(--text);
+    }
+
+    .stat-value.highlight {
+      background: linear-gradient(135deg, var(--primary) 0%, #8b5cf6 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+
+    .io-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 2rem;
+      margin-bottom: 2rem;
+      max-height: 600px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+    }
+
+    .io-header {
+      font-size: 1rem;
+      font-weight: 600;
+      color: var(--text);
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+      position: sticky;
+      top: 0;
+      background: linear-gradient(135deg, var(--bg-gradient-start) 0%, var(--bg-gradient-end) 100%);
+      padding: 0.75rem 0;
+      z-index: 10;
+      backdrop-filter: blur(10px);
+    }
+
+    .io-count {
+      background: rgba(59, 130, 246, 0.2);
+      color: var(--primary);
+      padding: 0.25rem 0.75rem;
+      border-radius: 8px;
+      font-size: 0.85rem;
+    }
+
+    .io-list {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .io-item {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-left: 3px solid var(--primary);
+      border-radius: 12px;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .io-item:hover {
+      border-left-color: var(--primary-hover);
+      transform: translateX(4px);
+    }
+
+    .io-item.output {
+      border-left-color: var(--success);
+    }
+
+    .io-amount {
+      font-size: 1.1rem;
+      font-weight: 700;
+      color: var(--text);
+      margin-bottom: 0.5rem;
+    }
+
+    .io-type {
+      display: inline-block;
+      background: rgba(59, 130, 246, 0.15);
+      color: var(--primary);
+      padding: 0.25rem 0.75rem;
+      border-radius: 6px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      margin-bottom: 0.5rem;
+    }
+
+    .io-detail {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+      font-family: 'Monaco', monospace;
+      word-break: break-all;
+    }
+
+    .psbt-card {
+      background: var(--card-bg);
+      backdrop-filter: blur(20px);
+      border: 1px solid var(--card-border);
+      border-radius: 16px;
+      padding: 2rem;
+    }
+
+    .psbt-output {
+      background: var(--input-bg);
+      border: 1px solid var(--border-color);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.5rem;
+      max-height: 150px;
+      overflow-y: auto;
+    }
+
+    .psbt-text {
+      font-family: 'Monaco', monospace;
+      font-size: 0.85rem;
+      color: #9ca3af;
+      word-break: break-all;
+      line-height: 1.6;
+    }
+
+    .copy-btn {
+      background: rgba(255, 255, 255, 0.05);
+      color: var(--text);
+      border: 1px solid var(--border-color);
+      padding: 0.75rem 1.5rem;
+      border-radius: 10px;
+      font-size: 0.95rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+
+    .copy-btn:hover {
+      background: rgba(255, 255, 255, 0.1);
+      border-color: var(--primary);
+      color: var(--primary);
+    }
+
+    .reset-link {
+      display: block;
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+      cursor: pointer;
+      padding: 1.5rem;
+      transition: all 0.2s ease;
+    }
+
+    .reset-link:hover {
+      color: var(--text);
+    }
+
+    ::-webkit-scrollbar {
+      width: 8px;
+      height: 8px;
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent;
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: rgba(59, 130, 246, 0.3);
+      border-radius: 4px;
+    }
+
+    ::-webkit-scrollbar-thumb:hover {
+      background: rgba(59, 130, 246, 0.5);
+    }
+
+    @media (max-width: 768px) {
+      .logo-text {
+        font-size: 2rem;
+      }
+
+      .card {
+        padding: 2rem;
+      }
+
+      .io-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .stats-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="container">
+
+    <header class="header">
+      <div class="logo-container">
+        <div class="bitcoin-icon">₿</div>
+        <h1 class="logo-text">Coin Smith</h1>
+      </div>
+      <p class="tagline">A Safe, PSBT Transaction Builder</p>
+    </header>
+
+    <main class="main-content">
+
+      <div class="card">
+        <h2 class="card-title">Select a Fixture</h2>
+
+        <input type="file" id="file-input" accept=".json" style="display:none" onchange="handleFileUpload(event)">
+
+        <div class="drop-zone" id="drop-zone" ondrop="handleFileDrop(event)"
+          ondragover="event.preventDefault(); this.classList.add('dragover')"
+          ondragleave="this.classList.remove('dragover')" onclick="document.getElementById('file-input').click()">
+
+          <div class="upload-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+              stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+              <polyline points="17 8 12 3 7 8"></polyline>
+              <line x1="12" y1="3" x2="12" y2="15"></line>
+            </svg>
+          </div>
+
+          <p class="drop-text">Drag and drop a <code>.json</code> fixture file here</p>
+          <p class="drop-subtext">OR</p>
+          <button class="browse-btn"
+            onclick="event.stopPropagation(); document.getElementById('file-input').click()">Browse Files</button>
+        </div>
+
+        <div class="divider">
+          <span>OR</span>
+        </div>
+        <textarea class="json-editor" id="json-input" placeholder='{
+  "network": "mainnet",
+  "utxos": [...],
+  "payments": [...],
+  "change": {...},
+  "fee_rate_sat_vb": 2.5
+}' spellcheck="false"></textarea>
+
+        <div class="error-msg" id="error-msg"></div>
+
+        <div class="button-row">
+          <button class="btn-primary" onclick="triggerAnalysis()">Build from Paste</button>
+          <button class="btn-secondary" onclick="loadExample()">Load Example</button>
+        </div>
+      </div>
+
+      <div id="results" class="results">
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Total Fee</div>
+            <div class="stat-value highlight" id="stat-fee">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Fee Rate</div>
+            <div class="stat-value" id="stat-rate">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Size</div>
+            <div class="stat-value" id="stat-size">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">RBF</div>
+            <div class="stat-value" id="stat-rbf">—</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Locktime</div>
+            <div class="stat-value" id="stat-locktime">—</div>
+          </div>
+        </div>
+
+        <div class="io-grid">
+          <div>
+            <div class="io-header">
+              → Inputs
+              <span class="io-count" id="input-count">0</span>
+            </div>
+            <div class="io-list" id="input-list">
+              <div class="io-item">
+                <div class="io-detail">No inputs</div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <div class="io-header">
+              ← Outputs
+              <span class="io-count" id="output-count">0</span>
+            </div>
+            <div class="io-list" id="output-list">
+              <div class="io-item output">
+                <div class="io-detail">No outputs</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="psbt-card">
+          <div class="stat-label" style="margin-bottom: 1rem;">Exported PSBT (Base64)</div>
+          <div class="psbt-output">
+            <div class="psbt-text" id="psbt-text">—</div>
+          </div>
+          <button class="copy-btn" onclick="copyPsbt()">📋 Copy PSBT</button>
+        </div>
+
+        <a class="reset-link" onclick="resetUI()">← Load new fixture</a>
+      </div>
+
+    </main>
+
+  </div>
+
+  <script>
+    const EXAMPLE = {
+      "network": "mainnet",
+      "utxos": [
+        {
+          "txid": "b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7",
+          "vout": 0,
+          "value_sats": 250000,
+          "script_pubkey_hex": "0014b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7b7",
+          "script_type": "p2wpkh",
+          "address": "bc1qk7mm0dahk7mm0dahk7mm0dahk7mm0dah8xxn9v"
+        }
+      ],
+      "payments": [
+        {
+          "address": "bc1qhzut3w9chzut3w9chzut3w9chzut3w9cg758p4",
+          "script_pubkey_hex": "0014b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8b8",
+          "script_type": "p2wpkh",
+          "value_sats": 200000
+        }
+      ],
+      "change": {
+        "address": "bc1qhxumnwdehxumnwdehxumnwdehxumnwdefw4xt5",
+        "script_pubkey_hex": "0014b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9b9",
+        "script_type": "p2wpkh"
+      },
+      "fee_rate_sat_vb": 5,
+      "rbf": true,
+      "locktime": 850000,
+      "current_height": 850000,
+      "policy": {
+        "max_inputs": 5
+      }
+    };
+
+    function handleFileDrop(e) {
+      e.preventDefault();
+      e.currentTarget.classList.remove('dragover');
+      const file = e.dataTransfer.files[0];
+      if (file) {
+        readAndProcessFile(file);
+      }
+    }
+
+    function handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (file) {
+        readAndProcessFile(file);
+      }
+    }
+
+    function readAndProcessFile(file) {
+      const reader = new FileReader();
+      reader.onload = function (e) {
+        const content = e.target.result;
+        document.getElementById('json-input').value = content;
+      };
+      reader.readAsText(file);
+    }
+
+    function loadExample() {
+      document.getElementById('json-input').value = JSON.stringify(EXAMPLE, null, 2);
+    }
+    async function triggerAnalysis() {
+      const jsonInput = document.getElementById('json-input').value;
+      const errorMsg = document.getElementById('error-msg');
+
+      errorMsg.classList.remove('show');
+
+      let fixture;
+      try {
+        fixture = JSON.parse(jsonInput);
+      } catch (e) {
+        document.getElementById('results').classList.remove('show');
+        showError(e.message, 'INVALID_JSON');
+        return;
+      }
+
+      try {
+        const res = await fetch('/api/build', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(fixture)
+        });
+        const data = await res.json();
+
+        if (data.ok === true || data.ok === 'true') {
+          errorMsg.classList.remove('show');
+          renderResults(data);
+        } else {
+          document.getElementById('results').classList.remove('show');
+          showError(data.error?.message || 'Build failed', data.error?.code || 'BUILD_ERROR');
+        }
+      } catch (e) {
+        document.getElementById('results').classList.remove('show');
+        showError(e.message, 'NETWORK_ERROR');
+      }
+    }
+
+    function renderResults(data) {
+      document.getElementById('results').classList.add('show');
+
+      document.getElementById('stat-fee').textContent = data.fee_sats.toLocaleString() + ' sats';
+      document.getElementById('stat-rate').textContent = data.fee_rate_sat_vb.toFixed(2) + ' sat/vB';
+      document.getElementById('stat-size').textContent = data.vbytes + ' vB';
+      document.getElementById('stat-rbf').textContent = data.rbf_signaling ? 'Enabled' : 'Disabled';
+
+      const lt = data.locktime ?? 0;
+      const ltType = (data.locktime_type || 'none').replace(/_/g, ' ');
+      if (ltType === 'block height' || ltType.includes('block')) {
+        document.getElementById('stat-locktime').textContent = `Block ${lt.toLocaleString()}`;
+      } else if (ltType === 'unix timestamp' || ltType.includes('timestamp')) {
+        document.getElementById('stat-locktime').textContent = `${new Date(lt * 1000).toLocaleDateString()}`;
+      } else if (lt === 0) {
+        document.getElementById('stat-locktime').textContent = 'None';
+      } else {
+        document.getElementById('stat-locktime').textContent = lt.toLocaleString();
+      }
+
+      document.getElementById('psbt-text').textContent = data.psbt_base64;
+
+      const inputs = data.selected_inputs || [];
+      document.getElementById('input-count').textContent = inputs.length;
+      const inputList = document.getElementById('input-list');
+
+      if (inputs.length === 0) {
+        inputList.innerHTML = '<div class="io-item"><div class="io-detail">No inputs</div></div>';
+      } else {
+        inputList.innerHTML = inputs.map(i => `
+        <div class="io-item">
+          <div class="io-amount">${i.value_sats.toLocaleString()} sats</div>
+          <div class="io-type">${i.script_type.toUpperCase()}</div>
+          <div class="io-detail">${i.txid.slice(0, 12)}...${i.txid.slice(-12)}:${i.vout}</div>
+        </div>
+      `).join('');
+      }
+
+      const outputs = data.outputs || [];
+      document.getElementById('output-count').textContent = outputs.length;
+      const outputList = document.getElementById('output-list');
+
+      if (outputs.length === 0) {
+        outputList.innerHTML = '<div class="io-item output"><div class="io-detail">No outputs</div></div>';
+      } else {
+        outputList.innerHTML = outputs.map(o => {
+          const scriptHex = o.script_pubkey_hex || '';
+          const displayScript = scriptHex.length > 32
+            ? `${scriptHex.slice(0, 16)}...${scriptHex.slice(-16)}`
+            : scriptHex;
+          const badge = o.is_change
+            ? '<span style="background: rgba(16, 185, 129, 0.2); color: #10b981; padding: 0.25rem 0.6rem; border-radius: 6px; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem;">CHANGE</span>'
+            : '';
+          return `
+        <div class="io-item ${o.is_change ? 'output' : ''}">
+          <div class="io-amount">${o.value_sats.toLocaleString()} sats ${badge}</div>
+          <div class="io-type">${o.script_type.toUpperCase()}</div>
+          <div class="io-detail">${displayScript}</div>
+        </div>`;
+        }).join('');
+      }
+
+      setTimeout(() => {
+        document.getElementById('results').scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+    }
+    function showError(msg, code = 'INVALID_FIXTURE') {
+      const errorMsg = document.getElementById('error-msg');
+
+      const errorObj = {
+        ok: false,
+        error: {
+          code: code,
+          message: msg
+        }
+      };
+
+      const jsonStr = JSON.stringify(errorObj, null, 2);
+
+      const highlighted = jsonStr
+        .replace(/"ok":/g, '<span class="error-key">"ok"</span>:')
+        .replace(/"error":/g, '<span class="error-key">"error"</span>:')
+        .replace(/"code":/g, '<span class="error-key">"code"</span>:')
+        .replace(/"message":/g, '<span class="error-key">"message"</span>:')
+        .replace(/: false/g, ': <span class="error-boolean">false</span>')
+        .replace(/: true/g, ': <span class="error-boolean">true</span>')
+        .replace(/: "([^"]+)"/g, (match, p1) => {
+          if (p1 !== 'ok' && p1 !== 'error' && p1 !== 'code' && p1 !== 'message') {
+            return `: <span class="error-string">"${p1}"</span>`;
+          }
+          return match;
+        });
+
+      errorMsg.innerHTML = highlighted;
+      errorMsg.classList.add('show');
+    }
+
+    function copyPsbt() {
+      const text = document.getElementById('psbt-text').textContent;
+      navigator.clipboard.writeText(text);
+
+      const btn = event.target;
+      const originalText = btn.textContent;
+      btn.textContent = '✓ Copied!';
+      setTimeout(() => {
+        btn.textContent = originalText;
+      }, 2000);
+    }
+
+    function resetUI() {
+      document.getElementById('results').classList.remove('show');
+      document.getElementById('error-msg').classList.remove('show');
+      document.getElementById('json-input').value = '';
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+  </script>
+
+</body>
+
+</html>
