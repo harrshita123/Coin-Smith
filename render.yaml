@@ -1,0 +1,9 @@
+services:
+  - type: web
+    name: coin-smith
+    runtime: rust
+    buildCommand: cargo build --release
+    startCommand: ./target/release/coin-smith serve
+    envVars:
+      - key: PORT
+        value: 3000
