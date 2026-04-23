@@ -1,13 +1,4 @@
-mod cli;
-mod server;
-mod builder;
-mod coinselect;
-mod fees;
-mod validate;
-mod psbt;
-mod types;
-#[cfg(test)]
-mod tests;
+use coin_smith::{cli, server};
 
 #[tokio::main]
 async fn main() {
