@@ -7,6 +7,14 @@ edition = "2021"
 name = "coin-smith"
 path = "src/main.rs"
 
+[[bin]]
+name = "build"
+path = "api/build.rs"
+
+[[bin]]
+name = "health"
+path = "api/health.rs"
+
 [dependencies]
 bitcoin = { version = "0.31", features = ["serde", "base64"] }
 serde = { version = "1", features = ["derive"] }
