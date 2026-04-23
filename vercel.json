@@ -1,8 +1,12 @@
 {
   "routes": [
     {
-      "src": "/api/(.*)",
-      "dest": "/api/$1.rs"
+      "src": "/api/build",
+      "dest": "/api/api_build.rs"
+    },
+    {
+      "src": "/api/health",
+      "dest": "/api/health.rs"
     },
     {
       "src": "/(.*)",
